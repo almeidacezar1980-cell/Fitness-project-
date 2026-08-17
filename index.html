@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#5b2a86" />
+  <meta name="description" content="FitProgress Cezar - acompanhamento de treinos e progresso físico." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>FitProgress Cezar</title>
+  <style>
+    :root{
+      --bg:#f5f4f8; --card:#ffffff; --text:#1f1f26; --muted:#6f6b7a;
+      --primary:#5b2a86; --primary2:#7d3fb2; --accent:#f4d03f;
+      --ok:#2e8b57; --danger:#c0392b; --border:#e6e2eb;
+      --shadow:0 10px 28px rgba(40,20,60,.08);
+    }
+    [data-theme="dark"]{
+      --bg:#121117; --card:#1b1922; --text:#f5f2f8; --muted:#aaa3b4;
+      --primary:#8b5bc0; --primary2:#a878da; --accent:#f4d03f;
+      --ok:#4dbb7b; --danger:#ff7b72; --border:#302c38;
+      --shadow:0 10px 28px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .app{max-width:760px;margin:0 auto;padding:0 14px 92px}
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--primary),var(--primary2));color:white;margin:0 -14px 14px;padding:18px 18px 16px;border-radius:0 0 24px 24px;box-shadow:var(--shadow)}
+    .topline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand img{width:48px;height:48px;border-radius:14px;background:white;padding:3px}
+    .brand h1{font-size:1.25rem;margin:0}.brand p{margin:2px 0 0;font-size:.85rem;opacity:.9}
+    .iconbtn{border:0;background:rgba(255,255,255,.16);color:white;width:42px;height:42px;border-radius:12px;font-size:1.15rem}
+    .hero{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .hero .stat{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:11px}
+    .hero .v{font-size:1.25rem;font-weight:800}.hero .k{font-size:.76rem;opacity:.86}
+    section{display:none}.active{display:block}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+    .card h2,.card h3{margin:0 0 10px}
+    .row{display:flex;gap:10px;align-items:center}.wrap{flex-wrap:wrap}.between{justify-content:space-between}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    label{font-size:.82rem;color:var(--muted);display:block;margin-bottom:4px}
+    input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:12px;font:inherit}
+    textarea{min-height:72px;resize:vertical}
+    button{font:inherit;cursor:pointer}
+    .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:700;background:var(--primary);color:white}
+    .btn.secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+    .btn.accent{background:var(--accent);color:#2a2200}
+    .btn.danger{background:var(--danger)}
+    .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:.78rem;background:var(--bg);border:1px solid var(--border)}
+    .progress{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;border:1px solid var(--border)}
+    .progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0}
+    .muted{color:var(--muted)} .small{font-size:.82rem}
+    .workout{border:1px solid var(--border);border-radius:14px;padding:12px;margin:9px 0;background:var(--bg)}
+    .exercise{display:grid;grid-template-columns:1fr 72px 72px 74px;gap:7px;align-items:end;margin:9px 0}
+    .exercise .ename{align-self:center;font-weight:700}
+    .exercise input{padding:8px}
+    .checkline{display:flex;align-items:center;gap:8px}.checkline input{width:auto;transform:scale(1.2)}
+    canvas{width:100%;height:220px;background:var(--bg);border-radius:12px;border:1px solid var(--border)}
+    .nav{position:fixed;bottom:0;left:0;right:0;z-index:15;background:var(--card);border-top:1px solid var(--border);padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+    .nav button{border:0;background:transparent;color:var(--muted);padding:6px 2px;border-radius:10px;font-size:.72rem}
+    .nav button strong{display:block;font-size:1.25rem;line-height:1.2}
+    .nav button.sel{background:var(--bg);color:var(--primary);font-weight:800}
+    .photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--bg);min-height:150px}
+    .photo img{width:100%;height:180px;object-fit:cover;display:block}
+    .photo .meta{padding:8px;font-size:.78rem}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;background:#222;color:#fff;padding:10px 14px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:30;font-size:.86rem}
+    .toast.show{opacity:1}
+    .timer{font-size:2rem;font-weight:900;letter-spacing:1px;text-align:center;margin:8px}
+    .install{display:none}
+    @media(max-width:520px){
+      .exercise{grid-template-columns:1fr 64px 64px 68px}
+      .grid3{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="topline">
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="FitProgress" />
+      <div><h1>FitProgress Cezar</h1><p>Planet Fitness • Seg / Qua / Sex</p></div>
+    </div>
+    <button class="iconbtn" id="themeBtn" title="Alternar tema">🌙</button>
+  </div>
+  <div class="hero">
+    <div class="stat"><div class="v" id="heroWeight">196 lb</div><div class="k">Peso atual</div></div>
+    <div class="stat"><div class="v" id="heroWorkouts">0</div><div class="k">Treinos concluídos</div></div>
+  </div>
+</header>
+
+<section id="home" class="active">
+  <div class="card">
+    <div class="row between"><div><h2>Hoje</h2><div class="muted" id="todayText"></div></div><span class="pill" id="todayBadge">Plano</span></div>
+    <div id="todayWorkout" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Meta de peso</h3>
+    <div class="row between small"><span id="weightStart">196 lb</span><strong id="weightGoal">190 lb</strong></div>
+    <div class="progress"><span id="weightProgress"></span></div>
+    <div class="muted small" id="weightProgressText" style="margin-top:7px"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>💧 Água</h3>
+      <div><strong id="waterValue">0</strong> / <span id="waterGoal">8</span> copos</div>
+      <div class="progress" style="margin:8px 0"><span id="waterBar"></span></div>
+      <button class="btn secondary" id="addWater">+ 1 copo</button>
+    </div>
+    <div class="card">
+      <h3>🥩 Proteína</h3>
+      <div><strong id="proteinValue">0</strong> / <span id="proteinGoal">150</span> g</div>
+      <input type="number" id="proteinInput" min="0" step="1" placeholder="Adicionar g" style="margin:8px 0">
+      <button class="btn secondary" id="addProtein">Adicionar</button>
+    </div>
+  </div>
+
+  <div class="card install" id="installCard">
+    <h3>📱 Instalar aplicativo</h3>
+    <p class="muted small">Instale o FitProgress na tela inicial do Android.</p>
+    <button class="btn accent" id="installBtn">Instalar agora</button>
+  </div>
+</section>
+
+<section id="workouts">
+  <div class="card">
+    <div class="row between"><div><h2>Treinos</h2><div class="muted small">Plano editável para Planet Fitness</div></div><button class="btn secondary" id="resetPlan">Restaurar plano</button></div>
+    <div id="workoutDays"></div>
+  </div>
+
+  <div class="card">
+    <h3>⏱️ Cronômetro de descanso</h3>
+    <div class="timer" id="timerDisplay">01:30</div>
+    <div class="row wrap">
+      <button class="btn" data-timer="60">60s</button>
+      <button class="btn" data-timer="90">90s</button>
+      <button class="btn" data-timer="120">120s</button>
+      <button class="btn secondary" id="timerStop">Parar</button>
+    </div>
+  </div>
+</section>
+
+<section id="progressSec">
+  <div class="card">
+    <h2>Registrar progresso</h2>
+    <div class="grid2">
+      <div><label>Data</label><input id="progDate" type="date"></div>
+      <div><label>Peso (lb)</label><input id="progWeight" type="number" step="0.1"></div>
+      <div><label>Cintura (cm)</label><input id="progWaist" type="number" step="0.1"></div>
+      <div><label>Gordura corporal (%)</label><input id="progFat" type="number" step="0.1"></div>
+      <div><label>Peito (cm)</label><input id="progChest" type="number" step="0.1"></div>
+      <div><label>Braço (cm)</label><input id="progArm" type="number" step="0.1"></div>
+    </div>
+    <div style="margin-top:10px"><label>Observações</label><textarea id="progNotes" placeholder="Energia, sono, desempenho..."></textarea></div>
+    <button class="btn" id="saveProgress" style="margin-top:10px">Salvar registro</button>
+  </div>
+
+  <div class="card">
+    <div class="row between"><h3>Evolução do peso</h3><span class="pill" id="weightDelta">—</span></div>
+    <canvas id="weightChart" width="700" height="220"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="row between"><h3>Histórico</h3><button class="btn secondary" id="clearProgress">Limpar</button></div>
+    <div id="progressList"></div>
+  </div>
+</section>
+
+<section id="photos">
+  <div class="card">
+    <h2>Fotos de evolução</h2>
+    <div class="grid2">
+      <div><label>Data</label><input id="photoDate" type="date"></div>
+      <div><label>Posição</label><select id="photoPos"><option>Frente</option><option>Lado</option><option>Costas</option></select></div>
+    </div>
+    <div style="margin-top:10px"><input id="photoInput" type="file" accept="image/*" capture="environment"></div>
+    <button class="btn" id="savePhoto" style="margin-top:10px">Salvar foto</button>
+    <p class="muted small">As fotos ficam armazenadas somente no seu aparelho/navegador.</p>
+  </div>
+  <div class="photo-grid" id="photoGrid"></div>
+</section>
+
+<section id="settings">
+  <div class="card">
+    <h2>Perfil e metas</h2>
+    <div class="grid2">
+      <div><label>Nome</label><input id="setName"></div>
+      <div><label>Idade</label><input id="setAge" type="number"></div>
+      <div><label>Altura (m)</label><input id="setHeight" type="number" step="0.01"></div>
+      <div><label>Peso inicial (lb)</label><input id="setStartWeight" type="number" step="0.1"></div>
+      <div><label>Meta de peso (lb)</label><input id="setGoalWeight" type="number" step="0.1"></div>
+      <div><label>Meta de proteína (g)</label><input id="setProteinGoal" type="number"></div>
+      <div><label>Meta de água (copos)</label><input id="setWaterGoal" type="number"></div>
+    </div>
+    <button class="btn" id="saveSettings" style="margin-top:10px">Salvar configurações</button>
+  </div>
+
+  <div class="card">
+    <h3>💾 Backup e restauração</h3>
+    <p class="muted small">O backup inclui configurações, treinos, histórico, água/proteína e fotos.</p>
+    <div class="row wrap">
+      <button class="btn" id="exportBackup">Baixar backup</button>
+      <label class="btn secondary" style="display:inline-block;margin:0;color:var(--text)">Restaurar backup<input id="importBackup" type="file" accept=".json,application/json" style="display:none"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Privacidade</h3>
+    <p class="muted small">Seus dados ficam localmente no navegador. Não há conta, servidor ou envio automático de informações.</p>
+  </div>
+</section>
+</div>
+
+<nav class="nav">
+  <button data-target="home" class="sel"><strong>🏠</strong>Início</button>
+  <button data-target="workouts"><strong>🏋️</strong>Treinos</button>
+  <button data-target="progressSec"><strong>📈</strong>Progresso</button>
+  <button data-target="photos"><strong>📸</strong>Fotos</button>
+  <button data-target="settings"><strong>⚙️</strong>Ajustes</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_PLAN = {
+  monday: {label:"Segunda — Peito, costas e braços", exercises:[
+    {name:"Chest Press / Supino máquina",sets:3,reps:"8–12",weight:""},
+    {name:"Lat Pulldown / Puxada alta",sets:3,reps:"8–12",weight:""},
+    {name:"Seated Row / Remada sentada",sets:3,reps:"8–12",weight:""},
+    {name:"Shoulder Press / Desenvolvimento",sets:3,reps:"8–12",weight:""},
+    {name:"Biceps Curl / Rosca bíceps",sets:3,reps:"10–12",weight:""},
+    {name:"Triceps Pressdown / Tríceps",sets:3,reps:"10–12",weight:""}
+  ]},
+  wednesday: {label:"Quarta — Pernas e core", exercises:[
+    {name:"Leg Press / Leg press",sets:4,reps:"8–12",weight:""},
+    {name:"Leg Extension / Extensora",sets:3,reps:"10–15",weight:""},
+    {name:"Seated Leg Curl / Flexora",sets:3,reps:"10–15",weight:""},
+    {name:"Hip Abductor / Abdutora",sets:3,reps:"12–15",weight:""},
+    {name:"Calf Raise / Panturrilha",sets:3,reps:"12–15",weight:""},
+    {name:"Abdominal Machine / Abdominal",sets:3,reps:"12–15",weight:""}
+  ]},
+  friday: {label:"Sexta — Corpo inteiro", exercises:[
+    {name:"Smith Squat / Agachamento Smith",sets:3,reps:"8–12",weight:""},
+    {name:"Chest Press / Supino máquina",sets:3,reps:"8–12",weight:""},
+    {name:"Lat Pulldown / Puxada alta",sets:3,reps:"8–12",weight:""},
+    {name:"Seated Row / Remada sentada",sets:3,reps:"8–12",weight:""},
+    {name:"Lateral Raise / Elevação lateral",sets:3,reps:"12–15",weight:""},
+    {name:"Cable Curl + Triceps / Bíceps + tríceps",sets:3,reps:"10–12",weight:""}
+  ]}
+};
+const DEFAULT = {
+  profile:{name:"Cezar",age:46,height:1.69,startWeight:196,goalWeight:190,proteinGoal:150,waterGoal:8},
+  plan:DEFAULT_PLAN, progress:[], completed:[], daily:{}, theme:"light"
+};
+let state = JSON.parse(localStorage.getItem("fitprogress_state")||"null") || structuredClone(DEFAULT);
+let installPrompt=null, timerInt=null, timerLeft=90;
+
+function save(){ localStorage.setItem("fitprogress_state",JSON.stringify(state)); renderAll(); }
+function toast(msg){ const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800); }
+function isoToday(){ return new Date().toISOString().slice(0,10); }
+function dayKey(d=new Date()){ return ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"][d.getDay()]; }
+function dayData(){ const k=isoToday(); if(!state.daily[k]) state.daily[k]={water:0,protein:0}; return state.daily[k]; }
+function currentWeight(){ return state.progress.length ? Number(state.progress[state.progress.length-1].weight||state.profile.startWeight) : Number(state.profile.startWeight); }
+
+function renderAll(){
+  document.documentElement.dataset.theme=state.theme||"light";
+  document.getElementById("themeBtn").textContent=state.theme==="dark"?"☀️":"🌙";
+  const cw=currentWeight();
+  document.getElementById("heroWeight").textContent=cw.toFixed(1).replace(".0","")+" lb";
+  document.getElementById("heroWorkouts").textContent=state.completed.length;
+  document.getElementById("todayText").textContent=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"});
+  const dk=dayKey(), workout=state.plan[dk];
+  document.getElementById("todayBadge").textContent=workout?"Treino":"Recuperação";
+  document.getElementById("todayWorkout").innerHTML=workout?`<strong>${workout.label}</strong><div class="muted small">${workout.exercises.length} exercícios programados.</div><button class="btn" style="margin-top:10px" onclick="goWorkout('${dk}')">Abrir treino</button>`:`<strong>Dia de recuperação</strong><div class="muted small">Priorize sono, hidratação e proteína.</div>`;
+  const s=Number(state.profile.startWeight), g=Number(state.profile.goalWeight);
+  let pct=s===g?100:((s-cw)/(s-g))*100; pct=Math.max(0,Math.min(100,pct));
+  document.getElementById("weightStart").textContent=s+" lb";
+  document.getElementById("weightGoal").textContent="Meta "+g+" lb";
+  document.getElementById("weightProgress").style.width=pct+"%";
+  document.getElementById("weightProgressText").textContent=`${pct.toFixed(0)}% da meta concluída`;
+  const dd=dayData();
+  document.getElementById("waterValue").textContent=dd.water||0;
+  document.getElementById("waterGoal").textContent=state.profile.waterGoal;
+  document.getElementById("waterBar").style.width=Math.min(100,(dd.water/state.profile.waterGoal)*100)+"%";
+  document.getElementById("proteinValue").textContent=dd.protein||0;
+  document.getElementById("proteinGoal").textContent=state.profile.proteinGoal;
+  renderWorkouts(); renderProgress(); fillSettings();
+}
+function renderWorkouts(){
+  const el=document.getElementById("workoutDays"); el.innerHTML="";
+  Object.entries(state.plan).forEach(([key,d])=>{
+    const done=state.completed.includes(isoToday()+"_"+key);
+    const box=document.createElement("div"); box.className="workout"; box.id="workout_"+key;
+    box.innerHTML=`<div class="row between"><div><strong>${d.label}</strong><div class="muted small">${d.exercises.length} exercícios</div></div><span class="pill">${done?"✅ Concluído":"Em aberto"}</span></div>
+      <div class="exercise small muted"><div>Exercício</div><div>Séries</div><div>Reps</div><div>Carga</div></div>
+      ${d.exercises.map((x,i)=>`<div class="exercise">
+        <div class="ename">${x.name}</div>
+        <input type="number" min="1" value="${x.sets}" onchange="editEx('${key}',${i},'sets',this.value)">
+        <input value="${x.reps}" onchange="editEx('${key}',${i},'reps',this.value)">
+        <input placeholder="lb" value="${x.weight||""}" onchange="editEx('${key}',${i},'weight',this.value)">
+      </div>`).join("")}
+      <button class="btn ${done?"secondary":""}" onclick="toggleDone('${key}')">${done?"Desmarcar treino":"Concluir treino"}</button>`;
+    el.appendChild(box);
+  });
+}
+function editEx(day,i,f,v){ state.plan[day].exercises[i][f]=(f==="sets"?Number(v):v); localStorage.setItem("fitprogress_state",JSON.stringify(state)); }
+function toggleDone(day){ const id=isoToday()+"_"+day; const i=state.completed.indexOf(id); i>=0?state.completed.splice(i,1):state.completed.push(id); save(); toast(i>=0?"Treino desmarcado":"Treino concluído!"); }
+function goWorkout(day){ document.querySelector('[data-target="workouts"]').click(); setTimeout(()=>document.getElementById("workout_"+day)?.scrollIntoView({behavior:"smooth"}),100); }
+
+function renderProgress(){
+  const list=[...state.progress].sort((a,b)=>a.date.localeCompare(b.date));
+  const host=document.getElementById("progressList");
+  host.innerHTML=list.length?list.slice().reverse().map((p,i)=>`<div class="workout"><div class="row between"><strong>${new Date(p.date+"T12:00:00").toLocaleDateString("pt-BR")}</strong><strong>${p.weight||"—"} lb</strong></div><div class="muted small">Cintura: ${p.waist||"—"} cm • Gordura: ${p.fat||"—"}% • Peito: ${p.chest||"—"} cm • Braço: ${p.arm||"—"} cm</div>${p.notes?`<div class="small" style="margin-top:5px">${p.notes}</div>`:""}</div>`).join(""):`<p class="muted small">Nenhum registro ainda.</p>`;
+  const delta=document.getElementById("weightDelta");
+  if(list.length>=2){ const d=Number(list.at(-1).weight)-Number(list[0].weight); delta.textContent=(d>0?"+":"")+d.toFixed(1)+" lb"; } else delta.textContent="—";
+  drawChart(list);
+}
+function drawChart(list){
+  const c=document.getElementById("weightChart"),ctx=c.getContext("2d"),w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h); ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--bg"); ctx.fillRect(0,0,w,h);
+  if(!list.length){ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--muted");ctx.font="16px sans-serif";ctx.fillText("Registre seu peso para ver o gráfico.",30,110);return}
+  const vals=list.map(x=>Number(x.weight)).filter(Number.isFinite); if(!vals.length)return;
+  const min=Math.min(...vals)-2,max=Math.max(...vals)+2,pad=36;
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--border");ctx.lineWidth=1;
+  for(let i=0;i<5;i++){let y=pad+(h-2*pad)*i/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();}
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--primary");ctx.lineWidth=4;ctx.beginPath();
+  vals.forEach((v,i)=>{let x=pad+(w-2*pad)*(vals.length===1?0.5:i/(vals.length-1));let y=pad+(max-v)/(max-min)*(h-2*pad);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke();
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--primary");
+  vals.forEach((v,i)=>{let x=pad+(w-2*pad)*(vals.length===1?0.5:i/(vals.length-1));let y=pad+(max-v)/(max-min)*(h-2*pad);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();});
+}
+function fillSettings(){
+  const p=state.profile;
+  setName.value=p.name;setAge.value=p.age;setHeight.value=p.height;setStartWeight.value=p.startWeight;setGoalWeight.value=p.goalWeight;setProteinGoal.value=p.proteinGoal;setWaterGoal.value=p.waterGoal;
+}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(b.dataset.target).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
+  if(b.dataset.target==="photos")loadPhotos();
+}));
+themeBtn.onclick=()=>{state.theme=state.theme==="dark"?"light":"dark";save()};
+addWater.onclick=()=>{dayData().water=(dayData().water||0)+1;save()};
+addProtein.onclick=()=>{const n=Number(proteinInput.value||0);if(n>0){dayData().protein=(dayData().protein||0)+n;proteinInput.value="";save()}};
+progDate.value=isoToday(); photoDate.value=isoToday();
+saveProgress.onclick=()=>{
+  const p={date:progDate.value||isoToday(),weight:Number(progWeight.value||currentWeight()),waist:progWaist.value,fat:progFat.value,chest:progChest.value,arm:progArm.value,notes:progNotes.value.trim()};
+  const i=state.progress.findIndex(x=>x.date===p.date); i>=0?state.progress[i]=p:state.progress.push(p);state.progress.sort((a,b)=>a.date.localeCompare(b.date));save();toast("Progresso salvo");
+};
+clearProgress.onclick=()=>{if(confirm("Apagar todo o histórico de progresso?")){state.progress=[];save()}};
+saveSettings.onclick=()=>{
+  state.profile={name:setName.value||"Cezar",age:Number(setAge.value),height:Number(setHeight.value),startWeight:Number(setStartWeight.value),goalWeight:Number(setGoalWeight.value),proteinGoal:Number(setProteinGoal.value),waterGoal:Number(setWaterGoal.value)};save();toast("Configurações salvas");
+};
+resetPlan.onclick=()=>{if(confirm("Restaurar o plano padrão?")){state.plan=structuredClone(DEFAULT_PLAN);save()}};
+
+document.querySelectorAll("[data-timer]").forEach(b=>b.onclick=()=>startTimer(Number(b.dataset.timer)));
+timerStop.onclick=()=>{clearInterval(timerInt);timerInt=null};
+function startTimer(sec){clearInterval(timerInt);timerLeft=sec;drawTimer();timerInt=setInterval(()=>{timerLeft--;drawTimer();if(timerLeft<=0){clearInterval(timerInt);timerInt=null;toast("Descanso concluído!");if(navigator.vibrate)navigator.vibrate([250,100,250]);}},1000)}
+function drawTimer(){timerDisplay.textContent=String(Math.floor(timerLeft/60)).padStart(2,"0")+":"+String(timerLeft%60).padStart(2,"0")}
+
+function dbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open("fitprogress_photos",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos",{keyPath:"id",autoIncrement:true});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function savePhotoDB(obj){const db=await dbOpen();return new Promise((res,rej)=>{const tx=db.transaction("photos","readwrite");tx.objectStore("photos").add(obj);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+async function getPhotos(){const db=await dbOpen();return new Promise((res,rej)=>{const r=db.transaction("photos","readonly").objectStore("photos").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function clearPhotos(){const db=await dbOpen();return new Promise((res,rej)=>{const tx=db.transaction("photos","readwrite");tx.objectStore("photos").clear();tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+async function deletePhoto(id){const db=await dbOpen();return new Promise((res,rej)=>{const tx=db.transaction("photos","readwrite");tx.objectStore("photos").delete(id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+savePhoto.onclick=async()=>{const f=photoInput.files[0];if(!f)return toast("Escolha uma foto");await savePhotoDB({date:photoDate.value||isoToday(),pos:photoPos.value,blob:f});photoInput.value="";loadPhotos();toast("Foto salva")};
+async function loadPhotos(){const photos=(await getPhotos()).sort((a,b)=>b.date.localeCompare(a.date));photoGrid.innerHTML="";for(const p of photos){const url=URL.createObjectURL(p.blob);const d=document.createElement("div");d.className="photo";d.innerHTML=`<img src="${url}"><div class="meta"><strong>${p.pos}</strong> • ${new Date(p.date+"T12:00:00").toLocaleDateString("pt-BR")}<br><button class="btn danger" style="margin-top:6px;padding:6px 8px" onclick="removePhoto(${p.id})">Excluir</button></div>`;photoGrid.appendChild(d)}if(!photos.length)photoGrid.innerHTML='<p class="muted small">Nenhuma foto salva.</p>'}
+window.removePhoto=async id=>{if(confirm("Excluir esta foto?")){await deletePhoto(id);loadPhotos()}};
+
+function blobToDataURL(blob){return new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(blob)})}
+function dataURLtoBlob(dataurl){const arr=dataurl.split(","),mime=arr[0].match(/:(.*?);/)[1],bstr=atob(arr[1]);let n=bstr.length,u8=new Uint8Array(n);while(n--)u8[n]=bstr.charCodeAt(n);return new Blob([u8],{type:mime})}
+exportBackup.onclick=async()=>{
+  const photos=await getPhotos(), outPhotos=[];for(const p of photos)outPhotos.push({date:p.date,pos:p.pos,data:await blobToDataURL(p.blob)});
+  const payload={version:2,exportedAt:new Date().toISOString(),state,photos:outPhotos};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`FitProgress_backup_${isoToday()}.json`;a.click();URL.revokeObjectURL(a.href);toast("Backup criado");
+};
+importBackup.onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj.state)throw new Error();state=obj.state;localStorage.setItem("fitprogress_state",JSON.stringify(state));if(obj.photos){await clearPhotos();for(const p of obj.photos)await savePhotoDB({date:p.date,pos:p.pos,blob:dataURLtoBlob(p.data)})}renderAll();loadPhotos();toast("Backup restaurado")}catch{alert("Arquivo de backup inválido.")}e.target.value=""};
+
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;installCard.style.display="block"});
+installBtn.onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installCard.style.display="none"}};
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+
+renderAll(); drawTimer();
+</script>
+</body>
+</html>
